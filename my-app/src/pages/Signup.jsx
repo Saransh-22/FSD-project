@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "",role: "" });
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -32,6 +32,7 @@ export default function Signup() {
         <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
         <input type="text" name="name" placeholder="Name" onChange={handleChange} className="w-full p-2 mb-4 border rounded" required />
         <input type="email" name="email" placeholder="Email" onChange={handleChange} className="w-full p-2 mb-4 border rounded" required />
+        <input type="text" name="role" placeholder="Role" onChange={handleChange} className="w-full p-2 mb-4 border rounded" required />
         <input type="password" name="password" placeholder="Password" onChange={handleChange} className="w-full p-2 mb-4 border rounded" required />
         <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Sign Up</button>
       </form>

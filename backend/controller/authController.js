@@ -9,7 +9,7 @@ const generateToken = (id) => {
 
 // ------------------- SIGNUP -------------------
 export const signup = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password,role } = req.body;
   try {
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -18,11 +18,11 @@ export const signup = async (req, res) => {
     }
 
     // 🚀 Create user (password gets hashed automatically in model)
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password,role });
 
     res.status(201).json({
       token: generateToken(user._id),
-      user: { id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email ,role:user.role},
     });
   } catch (err) {
     console.error("Signup error details:", err); // log actual error
@@ -47,7 +47,7 @@ export const login = async (req, res) => {
 
     res.json({
       token: generateToken(user._id),
-      user: { id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email,role:user.role },
     });
   } catch (err) {
     console.error("Login error details:", err);
