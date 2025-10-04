@@ -6,7 +6,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-400 via-purple-400 to-blue-400 flex items-center justify-center p-4">
       <div className="w-full max-w-6xl bg-slate-800/30 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden">
-        <div className="p-8 md:p-12 text-center flex flex-col items-center">
+        <div className="p-8 md:p-8 text-center flex flex-col items-center">
           {/* Header / Logo Section */}
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center">
