@@ -4,9 +4,11 @@ import ProfileCard from "../component/profile/profilecard";
 import RecentActivity from "../component/profile/recentactivity";
 import SavedPlans from "../component/profile/savedplans";
 import AccountSettings from "../component/profile/accountsetting";
+import Sidebar from "../component/Sidebar";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("currentuser"));
@@ -15,20 +17,22 @@ export default function Profile() {
 
   return (
     <>
-      <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-indigo-400 via-purple-400 to-blue-400 pt-24 pb-10 px-4 flex justify-center">
+      <Navbar
+        onToggleSidebar={() => setSidebarOpen((open) => !open)}
+        isSidebarOpen={sidebarOpen}
+      />
+      <Sidebar isOpen={sidebarOpen} />
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-400 via-purple-400 to-blue-400 pt-24 pb-10 px-4 flex justify-center transition-all duration-300 ${sidebarOpen ? "pl-60" : "pl-4"}`}>
         <div className="w-full max-w-6xl bg-slate-800/30 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-10">
           <h1 className="text-3xl font-bold text-white mb-2">Profile</h1>
           <p className="mb-8 text-gray-300">
             Manage your account and review your AI compliance activity.
           </p>
-
           <div className="flex flex-col md:flex-row gap-8">
             <div className="flex-1 flex flex-col gap-8">
               <ProfileCard user={user} />
               <RecentActivity />
             </div>
-
             <div className="flex flex-col gap-8 w-full md:w-80">
               <SavedPlans />
               <AccountSettings />
