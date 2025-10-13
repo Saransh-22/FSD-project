@@ -24,7 +24,7 @@ export default function Signup() {
       }
 
       // Provide feedback and navigate
-      alert(res.data?.message || "Signup successful!");
+      // alert(res.data?.message || "Signup successful!");
       navigate("/home");
     } catch (err) {
       alert(err.response?.data?.message || "An error occurred");

@@ -15,7 +15,6 @@ export default function Login() {
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", formData);
 
-      // Save JWT and user info if provided
       if (res.data?.token) {
         localStorage.setItem("userInside", res.data.token);
       }
@@ -23,7 +22,7 @@ export default function Login() {
         localStorage.setItem("currentuser", JSON.stringify(res.data.user));
       }
 
-      alert(res.data?.message || "Login successful!");
+      // alert(res.data?.message || "Login successful!");
       navigate("/home");
     } catch (err) {
       alert(err.response?.data?.message || "An error occurred");

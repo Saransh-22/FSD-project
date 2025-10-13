@@ -4,9 +4,15 @@ import jwt_decode from "jwt-decode";
 
 export default function Navbar({ onToggleSidebar, isSidebarOpen }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // State for UI behaviors (scrolling and intro animation)
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Effect for Login Status (your original logic)
   useEffect(() => {
     const token = localStorage.getItem("userInside");
     if (token) {
@@ -14,7 +20,7 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }) {
         const decoded = jwt_decode(token);
         const isExpired = decoded.exp * 1000 < Date.now();
         setIsLoggedIn(!isExpired);
-        if (isExpired) localStorage.clear(); // auto logout if token expired
+        if (isExpired) localStorage.clear();
       } catch {
         setIsLoggedIn(false);
       }
@@ -23,6 +29,21 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }) {
     }
   }, [location]);
 
+  // Effect for Scroll Detection
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Effect for Intro Animation
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleSignOut = () => {
     localStorage.removeItem("userInside");
     localStorage.removeItem("currentuser");
@@ -30,19 +51,13 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }) {
     navigate("/");
   };
 
-  // Hide navbar on landing/login/signup pages
-  if (!isLoggedIn || (location.pathname !== "/home" && location.pathname !== "/profile")) return null;
+  // Hide navbar based on your original logic
+  if (!isLoggedIn || (location.pathname !== "/home" && location.pathname !== "/profile")) {
+    return null;
+  }
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-slate-900/70 backdrop-blur-xl border-b border-purple-400/20 shadow-lg shadow-purple-500/10 px-6 md:px-10 py-4 flex justify-between items-center">
-      {/* Sidebar Toggle Button */}
-      <button
-        onClick={onToggleSidebar}
-        className="mr-4 text-white text-2xl focus:outline-none"
-        aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
-      >
-        {isSidebarOpen ? "✖" : "☰"}
-      </button>
       {/* Logo / Brand */}
       <Link
         to="/home"
@@ -51,15 +66,31 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }) {
         <span className="text-purple-400 text-2xl">⚡</span>
         <span>PlanIntellect</span>
       </Link>
+
+      {/* Navigation Buttons */}
       <div className="flex items-center space-x-4">
-        {location.pathname === "/profile" && (
-            <button
-              onClick={handleSignOut}
-              className="px-5 py-2 border border-purple-400 text-white rounded-full font-semibold hover:bg-purple-500/20 transition-all transform hover:scale-[1.03]"
-            >
-              Sign Out
-            </button>
+        {location.pathname === "/home" && (
+          <button
+            onClick={() => navigate("/profile")}
+            className="px-5 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-full shadow-md shadow-purple-500/30 transition-all transform hover:scale-[1.03]"
+          >
+            Profile
+          </button>
         )}
+        {location.pathname === "/profile" && (
+          <button
+            onClick={() => navigate("/home")}
+            className="px-5 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-full shadow-md shadow-purple-500/30 transition-all transform hover:scale-[1.03]"
+          >
+            Home
+          </button>
+        )}
+        <button
+          onClick={handleSignOut}
+          className="px-5 py-2 border border-purple-400 text-white rounded-full font-semibold hover:bg-purple-500/20 transition-all transform hover:scale-[1.03]"
+        >
+          Sign Out
+        </button>
       </div>
     </nav>
   );
