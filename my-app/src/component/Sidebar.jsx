@@ -5,6 +5,7 @@ const menu = [
     { label: "Lesson Plans", icon: "📚", path: "/plans" },
     { label: "Compliance", icon: "✅", path: "/compliance" },
     { label: "History", icon: "🕒", path: "/history" },
+    { label: "Chatbot", icon: "🗣️", path: "/chatbot" },
     { label: "Profile", icon: "🧑‍🏫", path: "/profile" },
 ];
 
