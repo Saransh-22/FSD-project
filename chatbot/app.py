@@ -6,12 +6,27 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 os.environ["GOOGLE_API_KEY"] = api_key
 
 app = FastAPI(title="Lesson Plan Chatbot API")
+
+origins = [
+    "http://localhost:5173",  # React dev port number
+    "http://127.0.0.1:3000",  # for running python -m uvicorn app:app --reload --port 8000
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.5)
 memory = ConversationBufferMemory(memory_key="chat_history", input_key="user_input")
