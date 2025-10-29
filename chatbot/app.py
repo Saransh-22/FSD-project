@@ -8,17 +8,19 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
 from fastapi.middleware.cors import CORSMiddleware
 
+# Load environment variables
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 os.environ["GOOGLE_API_KEY"] = api_key
 
+# Initialize FastAPI app
 app = FastAPI(title="Lesson Plan Chatbot API")
 
+# CORS setup (for React frontend)
 origins = [
-    "http://localhost:5173",  # React dev port number
-    "http://127.0.0.1:3000",  # for running python -m uvicorn app:app --reload --port 8000
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
 ]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -27,18 +29,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# Gemini model
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.5)
 memory = ConversationBufferMemory(memory_key="chat_history", input_key="user_input")
 
+# --- SYSTEM PROMPT ---
 base_system_template = """
 You are a **Lesson Plan Compliance Checker Assistant**.
 Your tasks:
-- Help create, review, and improve lesson plans.
-- Give **{detail_mode}** suggestions.
-- If someone asks about Subjects, Grade, or curriculum topics, give clear responses.
-- If user asks something unrelated, reply:
-  "Sorry, I can only help with Lesson Plan Compliance Checker."
+- Help teachers create, review, and improve lesson plans.
+- Provide guidance on educational design, curriculum alignment, and classroom strategies.
+- If the user asks something unrelated to lesson planning, subjects, grades, or educational improvement,
+  respond strictly with: "Sorry, I can only help with Lesson Plan Compliance Checker."
+- Always provide a complete, detailed, and structured answer (never shorten or omit content).
+- Maintain the context of the conversation.
 
 Conversation so far:
 {chat_history}
@@ -47,63 +51,41 @@ User: {user_input}
 Assistant:
 """
 
-def ask_chain(user_input, detail_mode="concise"):
-    chat_history = memory.load_memory_variables({}).get("chat_history", "")
-    prompt_text = base_system_template.format(
-        detail_mode=detail_mode,
-        chat_history=chat_history,
-        user_input=user_input
-    )
-    prompt = ChatPromptTemplate.from_template(prompt_text)
-    chain = LLMChain(llm=llm, prompt=prompt, memory=memory, verbose=False)
-    response = chain.run(user_input=user_input)
-    return truncate_response(response, detail_mode)
+# --- MAIN CHAT FUNCTION ---
+def unified_chat(user_input: str, detail_mode: str = "concise"):
+    try:
+        chat_history = memory.load_memory_variables({}).get("chat_history", "")
+        prompt_text = base_system_template.format(
+            chat_history=chat_history,
+            user_input=user_input
+        )
 
-def truncate_response(response, detail_mode="concise", max_lines=6):
-    if detail_mode == "detailed":
-        return response.strip()
-    lines = response.strip().split("\n")
-    if len(lines) > max_lines:
-        return "\n".join(lines[:max_lines]) + "\n..."
-    return response.strip()
+        prompt = ChatPromptTemplate.from_template(prompt_text)
+        chain = LLMChain(llm=llm, prompt=prompt, memory=memory, verbose=False)
 
-def suggest_starter_plan(subject, grade, detail="short"):
-    mode = "detailed" if detail == "detailed" else "concise"
-    query = f"Create a {detail} sample lesson plan for {subject} at Grade {grade} level."
-    return ask_chain(query, detail_mode=mode)
+        # Run the conversation through Gemini
+        response = chain.run(user_input=user_input)
+        return response.strip()  # return full untruncated output
 
-def check_compliance(plan_text, detail="short"):
-    mode = "detailed" if detail == "detailed" else "concise"
-    query = f"Check this lesson plan for compliance ({detail} summary):\n{plan_text}"
-    return ask_chain(query, detail_mode=mode)
+    except Exception as e:
+        if "quota" in str(e).lower() or "429" in str(e):
+            return "⚠️ Google Gemini API quota exceeded. Please check your API key or wait a minute."
+        return f"❌ Error: {str(e)}"
 
+# --- REQUEST MODEL ---
 class ChatRequest(BaseModel):
     user_input: str
     detail_mode: str = "concise"
 
-class PlanRequest(BaseModel):
-    subject: str
-    grade: str
-    detail: str = "short"
-
-class ComplianceRequest(BaseModel):
-    plan_text: str
-    detail: str = "short"
-
-# End Points
-
+# --- ENDPOINTS ---
 @app.post("/chat")
 def chat(req: ChatRequest):
-    return {"reply": ask_chain(req.user_input, req.detail_mode)}
-
-@app.post("/starter-plan")
-def starter(req: PlanRequest):
-    return {"reply": suggest_starter_plan(req.subject, req.grade, req.detail)}
-
-@app.post("/check-plan")
-def check(req: ComplianceRequest):
-    return {"reply": check_compliance(req.plan_text, req.detail)}
+    """
+    Unified Lesson Plan Chatbot Endpoint
+    Handles lesson creation, compliance checks, and educational questions.
+    """
+    return {"reply": unified_chat(req.user_input, req.detail_mode)}
 
 @app.get("/")
 def root():
-    return {"status": "Lesson Plan Chatbot API running 🚀"}
+    return {"status": "Lesson Plan Chatbot API running 🚀 (Full Output Mode)"} 
