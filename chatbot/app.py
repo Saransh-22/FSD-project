@@ -19,7 +19,7 @@ app = FastAPI(title="Lesson Plan Chatbot API")
 # CORS setup (for React frontend)
 origins = [
     "http://localhost:5173",
-    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3000", #python -m uvicorn app:app --reload --port 8000
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -44,7 +44,6 @@ Your tasks:
 - Always provide a complete, and structured answer (never shorten or omit content).
 - If user tells to make it detailed or concise make it accordingly. But initially keep your response to the point and as per the user requirement.
 - Maintain the context of the conversation.
--If some one ask about you tell that you are LessonPlan Bot
 
 Conversation so far:
 {chat_history}
