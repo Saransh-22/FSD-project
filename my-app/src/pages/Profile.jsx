@@ -35,7 +35,7 @@ export default function Profile() {
             </div>
             <div className="flex flex-col gap-8 w-full md:w-80">
               <SavedPlans />
-              <AccountSettings />
+              {/* <AccountSettings /> */}
             </div>
           </div>
         </div>

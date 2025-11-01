@@ -2,8 +2,8 @@ import { Link, useLocation } from "react-router-dom";
 
 const menu = [
     { label: "Home", icon: "🏠", path: "/home" },
-    { label: "Lesson Plans", icon: "📚", path: "/plans" },
-    { label: "Compliance", icon: "✅", path: "/compliance" },
+    // { label: "Lesson Plans", icon: "📚", path: "/plans" },
+    // { label: "Compliance", icon: "✅", path: "/compliance" },
     { label: "History", icon: "🕒", path: "/history" },
     { label: "Chatbot", icon: "🗣️", path: "/chatbot" },
     { label: "Profile", icon: "🧑‍🏫", path: "/profile" },
