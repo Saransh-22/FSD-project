@@ -11,19 +11,46 @@ export default function Chatbot() {
   const inputRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  // Focus input on mount
+  // ✅ Focus input on mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Scroll to bottom when new messages appear
+  // ✅ Auto-scroll to bottom on new message
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
+  // ✅ Fetch previous chat history when user logs in
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        const token = localStorage.getItem("userInside");
+        if (!token) return; // Not logged in, skip
+
+        const res = await axios.get("http://localhost:5000/api/chat/history", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (Array.isArray(res.data)) {
+          // Map saved history into message format
+          const formatted = res.data.flatMap((item) => [
+            { sender: "user", text: item.message },
+            { sender: "bot", text: item.reply },
+          ]);
+          setMessages(formatted);
+        }
+      } catch (err) {
+        console.error("Error fetching chat history:", err);
+      }
+    };
+
+    fetchChatHistory();
+  }, []);
+
+  // ✅ Send message to backend (and FastAPI)
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -32,10 +59,18 @@ export default function Chatbot() {
     setInput("");
 
     try {
-      const res = await axios.post("http://localhost:8000/chat", {
-        user_input: input,
-        detail_mode: "concise",
-      });
+      const token = localStorage.getItem("userInside");
+      if (!token) {
+        alert("Please log in to use the chatbot.");
+        return;
+      }
+
+      // ✅ Send to Node backend (not directly to FastAPI)
+      const res = await axios.post(
+        "http://localhost:5000/api/chat",
+        { message: input },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       const botMsg = { sender: "bot", text: res.data.reply };
       setMessages((prev) => [...prev, botMsg]);
@@ -48,6 +83,7 @@ export default function Chatbot() {
     }
   };
 
+  // ✅ Handle Enter key (send message)
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -63,7 +99,7 @@ export default function Chatbot() {
       />
       <Sidebar isOpen={sidebarOpen} />
 
-      {/* Gradient background container */}
+      {/* Background container */}
       <div
         className={`fixed inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-500 pt-20 pb-4 px-4 flex justify-center transition-all duration-300 ${
           sidebarOpen ? "pl-60" : "pl-4"
@@ -79,7 +115,7 @@ export default function Chatbot() {
             creation, and improvement.
           </p>
 
-          {/* Chat section */}
+          {/* Chat Messages */}
           <div className="flex-1 bg-slate-800/60 rounded-2xl border border-slate-700 shadow-inner p-4 mb-4 overflow-hidden flex flex-col">
             <div
               ref={chatContainerRef}
