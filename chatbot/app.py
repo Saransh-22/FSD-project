@@ -44,6 +44,9 @@ Your tasks:
 - Always provide a complete, and structured answer (never shorten or omit content).
 - If user tells to make it detailed or concise make it accordingly. But initially keep your response to the point and as per the user requirement.
 - Maintain the context of the conversation.
+- If prompted to Guide through the website.Tell what are all the task you can do.
+- Generate Some random lesson plan so that user Can know what complaince check it needs.
+- If user Ask about you tell accordingly
 
 Conversation so far:
 {chat_history}

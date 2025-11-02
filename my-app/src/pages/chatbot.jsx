@@ -65,11 +65,11 @@ export default function Chatbot() {
 
       {/* Gradient background container */}
       <div
-        className={`fixed inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-500 pt-24 pb-10 px-4 flex justify-center transition-all duration-300 ${
+        className={`fixed inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-500 pt-20 pb-4 px-4 flex justify-center transition-all duration-300 ${
           sidebarOpen ? "pl-60" : "pl-4"
         }`}
       >
-        <div className="w-full max-w-5xl bg-slate-900/70 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-10 flex flex-col overflow-hidden">
+        <div className="w-full max-w-5xl bg-slate-900/70 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-6 flex flex-col overflow-hidden">
           {/* Header */}
           <h2 className="text-3xl font-bold text-white mb-1">
             Lesson Plan Chatbot
