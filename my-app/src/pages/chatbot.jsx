@@ -16,41 +16,14 @@ export default function Chatbot() {
     inputRef.current?.focus();
   }, []);
 
-  // ✅ Auto-scroll to bottom on new message
+  // ✅ Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // ✅ Fetch previous chat history when user logs in
-  useEffect(() => {
-    const fetchChatHistory = async () => {
-      try {
-        const token = localStorage.getItem("userInside");
-        if (!token) return; // Not logged in, skip
-
-        const res = await axios.get("http://localhost:5000/api/chat/history", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (Array.isArray(res.data)) {
-          // Map saved history into message format
-          const formatted = res.data.flatMap((item) => [
-            { sender: "user", text: item.message },
-            { sender: "bot", text: item.reply },
-          ]);
-          setMessages(formatted);
-        }
-      } catch (err) {
-        console.error("Error fetching chat history:", err);
-      }
-    };
-
-    fetchChatHistory();
-  }, []);
-
-  // ✅ Send message to backend (and FastAPI)
+  // ✅ Send message to backend
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -65,7 +38,6 @@ export default function Chatbot() {
         return;
       }
 
-      // ✅ Send to Node backend (not directly to FastAPI)
       const res = await axios.post(
         "http://localhost:5000/api/chat",
         { message: input },
@@ -83,11 +55,35 @@ export default function Chatbot() {
     }
   };
 
-  // ✅ Handle Enter key (send message)
+  // ✅ Handle Enter key press
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
+    }
+  };
+
+  // ✅ Save selected chat manually
+  const handleSaveChat = async (index) => {
+    try {
+      const token = localStorage.getItem("userInside");
+      if (!token) return alert("Please log in to save chats.");
+
+      const botMsg = messages[index];
+      const userMsg = [...messages].slice(0, index).reverse().find((m) => m.sender === "user");
+
+      if (!botMsg || !userMsg) return alert("No valid message pair to save.");
+
+      await axios.post(
+        "http://localhost:5000/api/chat/save",
+        { message: userMsg.text, reply: botMsg.text },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert("Chat saved successfully!");
+    } catch (err) {
+      console.error("Error saving chat:", err);
+      alert("Failed to save chat.");
     }
   };
 
@@ -99,7 +95,6 @@ export default function Chatbot() {
       />
       <Sidebar isOpen={sidebarOpen} />
 
-      {/* Background container */}
       <div
         className={`fixed inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-500 pt-20 pb-4 px-4 flex justify-center transition-all duration-300 ${
           sidebarOpen ? "pl-60" : "pl-4"
@@ -111,15 +106,15 @@ export default function Chatbot() {
             Lesson Plan Chatbot
           </h2>
           <p className="mb-4 text-gray-300 text-sm">
-            Get instant AI-powered help for lesson plan compliance,
-            creation, and improvement.
+            Get instant AI-powered help for lesson plan compliance, creation,
+            and improvement.
           </p>
 
-          {/* Chat Messages */}
+          {/* Chat messages */}
           <div className="flex-1 bg-slate-800/60 rounded-2xl border border-slate-700 shadow-inner p-4 mb-4 overflow-hidden flex flex-col">
             <div
               ref={chatContainerRef}
-              className="chat-scroll-area flex-1 overflow-y-auto pr-2"
+              className="chat-scroll-area flex-1 overflow-y-auto overflow-x-hidden pr-2 break-words"
               style={{
                 maxHeight: "60vh",
                 borderRadius: "1rem",
@@ -140,18 +135,26 @@ export default function Chatbot() {
                     }`}
                   >
                     <div
-                      className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-md transition-all duration-200 ${
+                      className={`max-w-[75%] break-words whitespace-pre-wrap overflow-hidden px-4 py-2 rounded-2xl shadow-md transition-all duration-200 ${
                         msg.sender === "user"
                           ? "bg-blue-500 text-white rounded-br-none"
                           : "bg-gray-100 text-gray-800 rounded-bl-none"
                       }`}
                     >
                       {msg.sender === "bot" && (
-                        <div className="font-semibold text-sm text-indigo-700 mb-1">
-                          🤖 LessonBot
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-semibold text-sm text-indigo-700">
+                            🤖 LessonBot
+                          </span>
+                          <button
+                            className="text-xs text-blue-500 hover:text-blue-700 underline"
+                            onClick={() => handleSaveChat(i)}
+                          >
+                            💾 Save
+                          </button>
                         </div>
                       )}
-                      <div className="prose max-w-none">
+                      <div className="break-words whitespace-pre-wrap overflow-x-hidden">
                         <ReactMarkdown>{msg.text}</ReactMarkdown>
                       </div>
                     </div>
@@ -161,8 +164,8 @@ export default function Chatbot() {
             </div>
           </div>
 
-          {/* Input Area */}
-          <div className="flex gap-2 items-center">
+          {/* Input area */}
+          <div className="flex items-center gap-2">
             <textarea
               ref={inputRef}
               rows={1}
@@ -172,6 +175,7 @@ export default function Chatbot() {
               onKeyDown={handleKeyDown}
               placeholder="Type your question and press Enter..."
             />
+
             <button
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-md transition-all"
               onClick={sendMessage}
