@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Chatbot from "./pages/chatbot";
+import Histroy from "./pages/history";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/chatbot" element={<Chatbot />} />
+        <Route path="/history" element={<Histroy />} />
       </Routes>
     </BrowserRouter>
   );

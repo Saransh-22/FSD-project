@@ -1,18 +1,17 @@
 import ChatHistory from "../models/chatHistory.js";
 
+// 🧠 Handle chat with bot
 export const chatWithBot = async (req, res) => {
   try {
     const { message } = req.body;
-    const userId = req.user?._id; // from protect middleware
+    const userId = req.user?._id;
 
-    // Validate
     if (!message) return res.status(400).json({ error: "Message is required" });
     if (!userId) return res.status(401).json({ error: "User not authenticated" });
 
-    // Use global fetch when available (Node 18+). Otherwise dynamically import node-fetch.
     const fetchFn = globalThis.fetch ?? (await import("node-fetch").then((m) => m.default));
 
-    // Send to FastAPI
+    // Send message to your FastAPI chatbot
     const response = await fetchFn("http://localhost:8000/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -27,35 +26,43 @@ export const chatWithBot = async (req, res) => {
       const text = await response.text();
       return res.status(response.status).json({
         error: "Chatbot service error",
-        status: response.status,
         detail: text,
       });
     }
 
     const data = await response.json();
-
-    // Save to MongoDB
-    await ChatHistory.create({
-      user: userId,
-      message,
-      reply: data.reply,
-    });
-
     return res.json(data);
   } catch (error) {
-    return res.status(502).json({
-      error: "Chatbot service unavailable",
-      message: error.message,
-    });
+    console.error("Chat error:", error);
+    res.status(502).json({ error: "Chatbot service unavailable", message: error.message });
   }
 };
 
+// 💾 Save selected chat manually
+export const saveChatManually = async (req, res) => {
+  try {
+    const { message, reply } = req.body;
+    const userId = req.user?._id;
+
+    if (!message || !reply)
+      return res.status(400).json({ error: "Message and reply are required" });
+
+    await ChatHistory.create({ user: userId, message, reply });
+    res.json({ success: true, message: "Chat saved successfully" });
+  } catch (err) {
+    console.error("Save chat error:", err);
+    res.status(500).json({ error: "Failed to save chat" });
+  }
+};
+
+// 📜 Get user's chat history
 export const getChatHistory = async (req, res) => {
   try {
     const userId = req.user._id;
-    const history = await ChatHistory.find({ user: userId }).sort({ createdAt: 1 });
+    const history = await ChatHistory.find({ user: userId }).sort({ createdAt: -1 });
     res.json(history);
   } catch (err) {
+    console.error("History fetch error:", err);
     res.status(500).json({ error: "Failed to fetch chat history" });
   }
 };
