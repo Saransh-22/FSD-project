@@ -34,7 +34,6 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }) {
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-slate-900/70 backdrop-blur-xl border-b border-purple-400/20 shadow-lg px-6 md:px-10 py-4 flex items-center justify-between">
-      {/* Sidebar Toggle Button */}
       <button
         onClick={onToggleSidebar}
         className="mr-4 text-white text-2xl focus:outline-none"
@@ -42,7 +41,6 @@ export default function Navbar({ onToggleSidebar, isSidebarOpen }) {
       >
         {isSidebarOpen ? "✖" : "☰"}
       </button>
-      {/* Logo / Brand */}
       <Link
         to="/home"
         className="flex items-center gap-2 text-white font-bold text-xl tracking-wide hover:text-purple-300 transition-colors"
