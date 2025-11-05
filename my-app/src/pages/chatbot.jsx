@@ -149,9 +149,8 @@ export default function Chatbot() {
       <Sidebar isOpen={sidebarOpen} />
 
       <div
-        className={`fixed inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-500 pt-20 pb-4 px-4 flex justify-center transition-all duration-300 ${
-          sidebarOpen ? "pl-60" : "pl-4"
-        }`}
+        className={`fixed inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-500 pt-20 pb-4 px-4 flex justify-center transition-all duration-300 ${sidebarOpen ? "pl-60" : "pl-4"
+          }`}
       >
         <div className="w-full max-w-5xl bg-slate-900/70 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-6 flex flex-col overflow-hidden">
           {/* Header */}
@@ -172,23 +171,26 @@ export default function Chatbot() {
               }}
             >
               {messages.length === 0 ? (
-                <div className="text-gray-400 text-center mt-20">
-                  👋 Start chatting! Ask about lesson plans, subjects, or teaching ideas.
+                <div className="flex flex-col justify-center items-center h-full text-gray-300 text-center">
+                  <div className="text-5xl mb-3 animate-bounce">👋</div>
+                  <p className="text-lg font-medium">
+                    Start chatting! Ask about <span className="text-indigo-400">lesson plans</span>,{" "}
+                    <span className="text-purple-300">subjects</span>, or{" "}
+                    <span className="text-blue-300">teaching ideas</span>.
+                  </p>
                 </div>
               ) : (
                 messages.map((msg, i) => (
                   <div
                     key={i}
-                    className={`flex mb-4 ${
-                      msg.sender === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex mb-4 ${msg.sender === "user" ? "justify-end" : "justify-start"
+                      }`}
                   >
                     <div
-                      className={`max-w-[75%] break-words whitespace-pre-wrap overflow-hidden px-4 py-2 rounded-2xl shadow-md transition-all duration-200 ${
-                        msg.sender === "user"
+                      className={`max-w-[75%] break-words whitespace-pre-wrap overflow-hidden px-4 py-2 rounded-2xl shadow-md transition-all duration-200 ${msg.sender === "user"
                           ? "bg-blue-500 text-white rounded-br-none"
                           : "bg-gray-100 text-gray-800 rounded-bl-none"
-                      }`}
+                        }`}
                     >
                       {msg.sender === "bot" && (
                         <div className="flex justify-between items-center mb-1">
