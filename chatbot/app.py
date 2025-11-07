@@ -16,7 +16,6 @@ os.environ["GOOGLE_API_KEY"] = api_key
 
 app = FastAPI(title="Lesson Plan Chatbot API")
 
-# Allow frontend connections
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:3000",
