@@ -8,21 +8,14 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
 
-# =========================
-# 🔹 Environment Setup
-# =========================
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
     raise ValueError("❌ GOOGLE_API_KEY not found in .env")
 os.environ["GOOGLE_API_KEY"] = api_key
 
-# =========================
-# 🔹 FastAPI Setup
-# =========================
 app = FastAPI(title="Lesson Plan Chatbot API")
 
-# Allow frontend connections
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:3000",
@@ -36,17 +29,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =========================
-# 🔹 Model + Memory Setup
-# =========================
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.5)
 
-# Temporary in-memory store for user sessions
 user_memory = {}
 
-# =========================
-# 🔹 Base Prompt Template
-# =========================
 base_system_template = """
 You are a **Lesson Plan Compliance Checker Assistant**.
 Your tasks:
@@ -67,12 +53,8 @@ User: {user_input}
 Assistant:
 """
 
-# =========================
-# 🔹 Unified Chat Logic
-# =========================
 def unified_chat(user_input: str, user_id: str = None, detail_mode: str = "concise"):
     try:
-        # Retrieve or create memory for this user
         if user_id not in user_memory:
             user_memory[user_id] = ConversationBufferMemory(
                 memory_key="chat_history", input_key="user_input"
@@ -96,17 +78,11 @@ def unified_chat(user_input: str, user_id: str = None, detail_mode: str = "conci
             return "⚠️ Google Gemini API quota exceeded. Please check your API key or wait a minute."
         return f"❌ Error: {str(e)}"
 
-# =========================
-# 🔹 Request Schema
-# =========================
 class ChatRequest(BaseModel):
     user_input: str
     user_id: str | None = None
     detail_mode: str = "concise"
 
-# =========================
-# 🔹 Chat Endpoint
-# =========================
 @app.post("/chat")
 def chat(req: ChatRequest):
     """
@@ -119,9 +95,6 @@ def chat(req: ChatRequest):
     reply = unified_chat(req.user_input, req.user_id, req.detail_mode)
     return {"reply": reply}
 
-# =========================
-# 🔹 Root Endpoint
-# =========================
 @app.get("/")
 def root():
     return {"status": "Lesson Plan Chatbot API running 🚀 (User-context mode enabled)"}
